@@ -763,6 +763,24 @@
       return copy;
     }
 
+    function drawNextCard(deck, excludedCategory = null) {
+      if (deck.length === 0) {
+        return null;
+      }
+
+      if (!excludedCategory) {
+        return deck.shift() || null;
+      }
+
+      const nextIndex = deck.findIndex((card) => card.category !== excludedCategory);
+      if (nextIndex === -1) {
+        return deck.shift() || null;
+      }
+
+      const [nextCard] = deck.splice(nextIndex, 1);
+      return nextCard || null;
+    }
+
     function parseCsvLine(line) {
       const values = [];
       let current = "";
@@ -918,8 +936,8 @@
         };
       });
 
-      const leftCard = shuffledDeck.shift() || null;
-      const rightCard = shuffledDeck.shift() || null;
+      const leftCard = drawNextCard(shuffledDeck);
+      const rightCard = drawNextCard(shuffledDeck, leftCard ? leftCard.category : null);
 
       return {
         players,
@@ -1016,7 +1034,7 @@
     function advanceCards() {
       const game = state.game;
       game.leftCard = game.rightCard;
-      game.rightCard = game.deck.shift() || null;
+      game.rightCard = drawNextCard(game.deck, game.leftCard ? game.leftCard.category : null);
 
       if (!game.leftCard || !game.rightCard) {
         game.isDeckExhausted = true;
