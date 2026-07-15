@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Cineplexity Clone</title>
+  <style>
+    :root {
+      --bg: #f5efe4;
+      --bg-accent: #ead8be;
+      --surface: rgba(255, 252, 247, 0.92);
+      --surface-strong: #fffdfa;
+      --text: #1e1a17;
+      --muted: #6d6259;
+      --border: rgba(30, 26, 23, 0.1);
+      --shadow: 0 20px 50px rgba(63, 40, 24, 0.12);
+      --radius-lg: 28px;
+      --radius-md: 20px;
+      --radius-sm: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: "Avenir Next", "Trebuchet MS", "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.75), transparent 40%),
+        radial-gradient(circle at right center, rgba(231, 183, 129, 0.32), transparent 30%),
+        linear-gradient(160deg, var(--bg), var(--bg-accent));
+    }
+
+    body {
+      min-height: 100vh;
+    }
+
+    button, input {
+      font: inherit;
+    }
+
+    .app-shell {
+      width: min(1200px, 100%);
+      margin: 0 auto;
+      min-height: 100vh;
+      padding: 24px;
+      display: flex;
+      align-items: stretch;
+    }
+
+    .panel {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 32px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .setup-screen,
+    .game-screen {
+      min-height: calc(100vh - 48px);
+      padding: 28px;
+    }
+
+    .setup-screen {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
+      gap: 24px;
+    }
+
+    .hero,
+    .setup-card,
+    .status-bar,
+    .card,
+    .player-chip,
+    .overlay-card {
+      border: 1px solid var(--border);
+      background: var(--surface-strong);
+      border-radius: var(--radius-lg);
+    }
+
+    .hero,
+    .setup-card {
+      padding: 24px;
+    }
+
+    .eyebrow {
+      display: inline-block;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(30, 26, 23, 0.07);
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 14px;
+    }
+
+    h1, h2, h3, p {
+      margin: 0;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.3rem, 4.8vw, 4.5rem);
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      margin-bottom: 18px;
+    }
+
+    .hero p {
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.5;
+      max-width: 40rem;
+    }
+
+    .feature-list {
+      margin-top: 22px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .feature-item {
+      padding: 16px 18px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(247,240,231,0.9));
+      border: 1px solid rgba(30, 26, 23, 0.08);
+      color: var(--muted);
+    }
+
+    .setup-side {
+      display: grid;
+      gap: 24px;
+      align-content: start;
+    }
+
+    .setup-card h2 {
+      font-size: 1.25rem;
+      margin-bottom: 8px;
+    }
+
+    .setup-card p {
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
+
+    .field-label {
+      display: block;
+      font-size: 0.92rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .player-list {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .player-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .text-input,
+    .score-target-input {
+      width: 100%;
+      border-radius: 16px;
+      border: 1px solid rgba(30, 26, 23, 0.13);
+      background: #fff;
+      padding: 14px 16px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 120ms ease, box-shadow 120ms ease;
+    }
+
+    .text-input:focus,
+    .score-target-input:focus {
+      border-color: rgba(30, 26, 23, 0.35);
+      box-shadow: 0 0 0 4px rgba(232, 188, 130, 0.28);
+    }
+
+    .icon-button,
+    .secondary-button,
+    .primary-button {
+      border: 0;
+      cursor: pointer;
+      transition: transform 120ms ease, opacity 120ms ease, box-shadow 120ms ease;
+    }
+
+    .icon-button:hover,
+    .secondary-button:hover,
+    .primary-button:hover {
+      transform: translateY(-1px);
+    }
+
+    .icon-button {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: rgba(30, 26, 23, 0.08);
+      color: var(--text);
+      font-size: 1.25rem;
+    }
+
+    .setup-actions,
+    .footer-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .secondary-button,
+    .primary-button {
+      border-radius: 999px;
+      padding: 14px 20px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+    }
+
+    .secondary-button {
+      background: rgba(30, 26, 23, 0.08);
+      color: var(--text);
+    }
+
+    .primary-button {
+      background: linear-gradient(135deg, #ff8a5c, #e94e3d);
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(233, 78, 61, 0.22);
+    }
+
+    .deck-meta {
+      display: grid;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .status-note,
+    .error-banner {
+      border-radius: 18px;
+      padding: 14px 16px;
+      line-height: 1.45;
+    }
+
+    .status-note {
+      background: rgba(83, 120, 212, 0.08);
+      color: #314580;
+    }
+
+    .error-banner {
+      background: rgba(205, 65, 65, 0.1);
+      color: #8a2424;
+    }
+
+    .game-screen {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr) auto;
+      gap: 20px;
+    }
+
+    .status-bar {
+      padding: 18px 20px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+      align-items: center;
+    }
+
+    .status-block strong {
+      display: block;
+      font-size: 0.78rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .status-block span {
+      display: block;
+      font-weight: 700;
+      font-size: clamp(1rem, 1.6vw, 1.2rem);
+    }
+
+    .cards-grid {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .card {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      min-height: 320px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0.15;
+      pointer-events: none;
+      background:
+        linear-gradient(135deg, rgba(255,255,255,0.75), rgba(255,255,255,0.05)),
+        radial-gradient(circle at top right, rgba(255,255,255,0.55), transparent 35%);
+    }
+
+    .card-header {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .card-position {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      opacity: 0.7;
+    }
+
+    .category-pill {
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.7);
+      font-size: 0.86rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      max-width: 100%;
+      word-break: break-word;
+    }
+
+    .clue-text {
+      position: relative;
+      z-index: 1;
+      margin: auto 0;
+      font-size: clamp(1.45rem, 3vw, 2.7rem);
+      line-height: 1.06;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      text-wrap: balance;
+      overflow-wrap: anywhere;
+    }
+
+    .card-empty {
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: var(--muted);
+      background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(241,235,226,0.9));
+    }
+
+    .player-tray {
+      display: grid;
+      gap: 16px;
+    }
+
+    .player-tray-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .player-tray-header h2 {
+      font-size: 1.15rem;
+    }
+
+    .player-tray-header p {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .player-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 14px;
+    }
+
+    .player-chip {
+      padding: 14px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 12px;
+      align-items: center;
+      text-align: left;
+      cursor: pointer;
+      box-shadow: 0 8px 18px rgba(63, 40, 24, 0.08);
+    }
+
+    .player-chip:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .player-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      color: white;
+      letter-spacing: 0.03em;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.35);
+    }
+
+    .player-name {
+      font-weight: 700;
+      font-size: 1rem;
+      overflow-wrap: anywhere;
+    }
+
+    .player-prompt {
+      color: var(--muted);
+      font-size: 0.86rem;
+      margin-top: 3px;
+    }
+
+    .score-badge {
+      min-width: 52px;
+      text-align: center;
+      border-radius: 16px;
+      padding: 10px 12px;
+      background: rgba(30, 26, 23, 0.06);
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(27, 19, 12, 0.28);
+      backdrop-filter: blur(10px);
+      padding: 24px;
+    }
+
+    .overlay-card {
+      width: min(520px, 100%);
+      padding: 30px;
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.18);
+    }
+
+    .overlay-card h2 {
+      font-size: clamp(2rem, 5vw, 3.1rem);
+      letter-spacing: -0.04em;
+      margin-bottom: 10px;
+    }
+
+    .overlay-card p {
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.5;
+      margin-bottom: 22px;
+    }
+
+    .winner-mark {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 16px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      color: white;
+      font-size: 1.8rem;
+      font-weight: 900;
+      box-shadow: 0 18px 32px rgba(63, 40, 24, 0.18);
+    }
+
+    @media (max-width: 900px) {
+      .app-shell {
+        padding: 14px;
+      }
+
+      .setup-screen {
+        grid-template-columns: 1fr;
+      }
+
+      .game-screen {
+        min-height: calc(100vh - 28px);
+      }
+
+      .status-bar {
+        grid-template-columns: 1fr;
+      }
+
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .card {
+        min-height: 240px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .setup-screen,
+      .game-screen {
+        padding: 18px;
+      }
+
+      .hero,
+      .setup-card,
+      .status-bar,
+      .card {
+        border-radius: 24px;
+      }
+
+      .player-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <main class="panel">
+      <section class="setup-screen" id="setupScreen">
+        <section class="hero">
+          <div class="eyebrow">Cineplexity Clone</div>
+          <h1>Fast rounds, big clues, easy scorekeeping.</h1>
+          <p>
+            Load your deck from <code>cards.csv</code>, add your players, and run the whole game from one simple screen while the clues stay readable on a mirrored TV.
+          </p>
+          <div class="feature-list">
+            <div class="feature-item">Two clue cards stay on screen at once, with the right card carrying forward into the next round.</div>
+            <div class="feature-item">Tap the winning player to score the round and advance the deck instantly.</div>
+            <div class="feature-item">Edit your deck in a spreadsheet-friendly CSV without touching the app code.</div>
+          </div>
+        </section>
+
+        <section class="setup-side">
+          <section class="setup-card">
+            <h2>Players</h2>
+            <p>Enter at least two players. Blank rows are ignored, and you can add more as needed.</p>
+            <div class="player-list" id="playerList"></div>
+            <div class="setup-actions">
+              <button class="secondary-button" type="button" id="addPlayerButton">Add Player</button>
+              <button class="secondary-button" type="button" id="trimPlayersButton">Remove Blank Rows</button>
+            </div>
+          </section>
+
+          <section class="setup-card">
+            <h2>Game Options</h2>
+            <p>Default game length is five points, but you can change it before starting.</p>
+            <label class="field-label" for="winningScoreInput">Winning score</label>
+            <input class="score-target-input" id="winningScoreInput" type="number" min="1" max="99" step="1" value="5">
+            <div class="deck-meta" style="margin-top: 18px;">
+              <div><strong>Deck source:</strong> <span id="deckStatusText">Loading cards.csv…</span></div>
+              <div id="deckCountText">Checking available cards…</div>
+            </div>
+            <div id="loadMessage" class="status-note hidden" style="margin-top: 16px;"></div>
+            <div id="loadError" class="error-banner hidden" style="margin-top: 16px;"></div>
+            <div class="footer-actions" style="margin-top: 22px;">
+              <button class="primary-button" type="button" id="startGameButton">Start Game</button>
+            </div>
+          </section>
+        </section>
+      </section>
+
+      <section class="game-screen hidden" id="gameScreen">
+        <section class="status-bar">
+          <div class="status-block">
+            <strong>Target</strong>
+            <span id="statusWinningScore">5 points to win</span>
+          </div>
+          <div class="status-block">
+            <strong>Deck</strong>
+            <span id="statusDeck">0 cards remaining</span>
+          </div>
+          <div class="status-block">
+            <strong>Round</strong>
+            <span id="statusRound">Round 1</span>
+          </div>
+        </section>
+
+        <section class="cards-grid">
+          <article class="card" id="leftCard"></article>
+          <article class="card" id="rightCard"></article>
+        </section>
+
+        <section class="player-tray">
+          <div class="player-tray-header">
+            <div>
+              <h2>Award the round</h2>
+              <p>Tap the player who won the current matchup.</p>
+            </div>
+            <button class="secondary-button" type="button" id="restartButton">New Game</button>
+          </div>
+          <div class="player-grid" id="playerGrid"></div>
+          <div id="gameMessage" class="status-note hidden"></div>
+        </section>
+      </section>
+
+      <section class="overlay hidden" id="winnerOverlay">
+        <div class="overlay-card">
+          <div class="winner-mark" id="winnerMark">W</div>
+          <h2 id="winnerTitle">Winner!</h2>
+          <p id="winnerBody">The game is over.</p>
+          <div class="footer-actions" style="justify-content: center;">
+            <button class="primary-button" type="button" id="playAgainButton">Play Again</button>
+            <button class="secondary-button" type="button" id="backToSetupButton">Back to Setup</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const CATEGORY_FALLBACK = "General";
+    const DEFAULT_WINNING_SCORE = 5;
+    const MINIMUM_PLAYERS = 2;
+
+    const elements = {
+      setupScreen: document.getElementById("setupScreen"),
+      gameScreen: document.getElementById("gameScreen"),
+      playerList: document.getElementById("playerList"),
+      addPlayerButton: document.getElementById("addPlayerButton"),
+      trimPlayersButton: document.getElementById("trimPlayersButton"),
+      winningScoreInput: document.getElementById("winningScoreInput"),
+      deckStatusText: document.getElementById("deckStatusText"),
+      deckCountText: document.getElementById("deckCountText"),
+      loadMessage: document.getElementById("loadMessage"),
+      loadError: document.getElementById("loadError"),
+      startGameButton: document.getElementById("startGameButton"),
+      statusWinningScore: document.getElementById("statusWinningScore"),
+      statusDeck: document.getElementById("statusDeck"),
+      statusRound: document.getElementById("statusRound"),
+      leftCard: document.getElementById("leftCard"),
+      rightCard: document.getElementById("rightCard"),
+      playerGrid: document.getElementById("playerGrid"),
+      restartButton: document.getElementById("restartButton"),
+      gameMessage: document.getElementById("gameMessage"),
+      winnerOverlay: document.getElementById("winnerOverlay"),
+      winnerMark: document.getElementById("winnerMark"),
+      winnerTitle: document.getElementById("winnerTitle"),
+      winnerBody: document.getElementById("winnerBody"),
+      playAgainButton: document.getElementById("playAgainButton"),
+      backToSetupButton: document.getElementById("backToSetupButton")
+    };
+
+    const state = {
+      deckSource: [],
+      deckWarning: "",
+      playersDraft: ["Player 1", "Player 2", "", ""],
+      game: null
+    };
+
+    function clampWinningScore(value) {
+      const parsed = Number.parseInt(value, 10);
+      if (!Number.isFinite(parsed)) {
+        return DEFAULT_WINNING_SCORE;
+      }
+      return Math.max(1, Math.min(99, parsed));
+    }
+
+    function createPlayerRow(initialValue = "") {
+      const row = document.createElement("div");
+      row.className = "player-row";
+
+      const input = document.createElement("input");
+      input.className = "text-input";
+      input.type = "text";
+      input.placeholder = "Player name";
+      input.value = initialValue;
+      input.maxLength = 24;
+      input.autocomplete = "off";
+
+      const removeButton = document.createElement("button");
+      removeButton.className = "icon-button";
+      removeButton.type = "button";
+      removeButton.textContent = "−";
+      removeButton.setAttribute("aria-label", "Remove player row");
+      removeButton.addEventListener("click", () => {
+        if (elements.playerList.children.length <= MINIMUM_PLAYERS) {
+          input.value = "";
+          syncPlayerDraft();
+          return;
+        }
+        row.remove();
+        syncPlayerDraft();
+      });
+
+      input.addEventListener("input", syncPlayerDraft);
+
+      row.append(input, removeButton);
+      return row;
+    }
+
+    function renderPlayerDraft() {
+      elements.playerList.innerHTML = "";
+      state.playersDraft.forEach((name) => {
+        elements.playerList.appendChild(createPlayerRow(name));
+      });
+      syncPlayerDraft();
+    }
+
+    function syncPlayerDraft() {
+      const rows = Array.from(elements.playerList.querySelectorAll(".text-input"));
+      state.playersDraft = rows.map((input) => input.value);
+    }
+
+    function addPlayerRow(defaultName = "") {
+      elements.playerList.appendChild(createPlayerRow(defaultName));
+      syncPlayerDraft();
+    }
+
+    function trimBlankRows() {
+      const rows = Array.from(elements.playerList.children);
+      const nonBlankRows = rows.filter((row) => {
+        const input = row.querySelector(".text-input");
+        return input && input.value.trim();
+      });
+
+      const nextNames = nonBlankRows.map((row) => row.querySelector(".text-input").value.trim());
+      while (nextNames.length < MINIMUM_PLAYERS) {
+        nextNames.push("");
+      }
+
+      state.playersDraft = nextNames;
+      renderPlayerDraft();
+    }
+
+    function getValidPlayerNames() {
+      syncPlayerDraft();
+      return state.playersDraft
+        .map((name) => name.trim())
+        .filter(Boolean)
+        .slice(0, 12);
+    }
+
+    function initialsForName(name) {
+      const parts = name.trim().split(/\s+/).filter(Boolean);
+      if (parts.length === 0) {
+        return "?";
+      }
+      if (parts.length === 1) {
+        return parts[0].slice(0, 2).toUpperCase();
+      }
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    }
+
+    function hueFromString(input) {
+      let hash = 0;
+      for (const character of input) {
+        hash = character.charCodeAt(0) + ((hash << 5) - hash);
+      }
+      return Math.abs(hash) % 360;
+    }
+
+    function colorSetFromLabel(label) {
+      const hue = hueFromString(label || CATEGORY_FALLBACK);
+      return {
+        base: `hsl(${hue} 72% 62%)`,
+        soft: `hsl(${hue} 77% 90%)`,
+        deep: `hsl(${hue} 46% 28%)`
+      };
+    }
+
+    function shuffle(array) {
+      const copy = [...array];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function parseCsvLine(line) {
+      const values = [];
+      let current = "";
+      let inQuotes = false;
+
+      for (let i = 0; i < line.length; i += 1) {
+        const character = line[i];
+        const nextCharacter = line[i + 1];
+
+        if (character === "\"") {
+          if (inQuotes && nextCharacter === "\"") {
+            current += "\"";
+            i += 1;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (character === "," && !inQuotes) {
+          values.push(current);
+          current = "";
+        } else {
+          current += character;
+        }
+      }
+
+      values.push(current);
+      return values.map((value) => value.trim());
+    }
+
+    function parseCsv(text) {
+      const lines = text
+        .replace(/\r\n/g, "\n")
+        .replace(/\r/g, "\n")
+        .split("\n")
+        .filter((line) => line.trim().length > 0);
+
+      if (lines.length === 0) {
+        return { cards: [], warning: "cards.csv is empty." };
+      }
+
+      const headers = parseCsvLine(lines[0]).map((header) => header.toLowerCase());
+      const categoryIndex = headers.indexOf("category");
+      const clueIndex = headers.indexOf("clue");
+
+      if (categoryIndex === -1 || clueIndex === -1) {
+        return {
+          cards: [],
+          warning: "cards.csv must include category and clue columns."
+        };
+      }
+
+      const cards = [];
+      let skipped = 0;
+
+      for (let i = 1; i < lines.length; i += 1) {
+        const columns = parseCsvLine(lines[i]);
+        const category = (columns[categoryIndex] || "").trim();
+        const clue = (columns[clueIndex] || "").trim();
+
+        if (!category || !clue) {
+          skipped += 1;
+          continue;
+        }
+
+        cards.push({ category, clue });
+      }
+
+      let warning = "";
+      if (skipped > 0) {
+        warning = `Skipped ${skipped} incomplete row${skipped === 1 ? "" : "s"} while loading the deck.`;
+      }
+
+      return { cards, warning };
+    }
+
+    async function loadDeck() {
+      elements.deckStatusText.textContent = "Loading cards.csv…";
+      elements.deckCountText.textContent = "Checking available cards…";
+      hideMessage(elements.loadMessage);
+      hideMessage(elements.loadError);
+
+      try {
+        const response = await fetch("cards.csv", { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error(`cards.csv returned ${response.status}`);
+        }
+
+        const csvText = await response.text();
+        const { cards, warning } = parseCsv(csvText);
+        state.deckSource = cards;
+        state.deckWarning = warning;
+
+        if (cards.length < 2) {
+          elements.deckStatusText.textContent = "Deck unavailable";
+          elements.deckCountText.textContent = "At least 2 valid cards are required.";
+          showMessage(elements.loadError, "cards.csv loaded, but it does not contain enough valid cards to start a game.");
+          return;
+        }
+
+        elements.deckStatusText.textContent = "cards.csv loaded";
+        elements.deckCountText.textContent = `${cards.length} cards ready to play`;
+        if (warning) {
+          showMessage(elements.loadMessage, warning);
+        }
+      } catch (error) {
+        state.deckSource = [];
+        state.deckWarning = "";
+        elements.deckStatusText.textContent = "Deck unavailable";
+        elements.deckCountText.textContent = "Unable to load cards.csv";
+        showMessage(
+          elements.loadError,
+          "The app could not load cards.csv from the same folder as index.html. Make sure both files are uploaded together and served from your host."
+        );
+        console.error(error);
+      }
+    }
+
+    function showMessage(element, message) {
+      element.textContent = message;
+      element.classList.remove("hidden");
+    }
+
+    function hideMessage(element) {
+      element.textContent = "";
+      element.classList.add("hidden");
+    }
+
+    function buildGameState() {
+      const playerNames = getValidPlayerNames();
+      const winningScore = clampWinningScore(elements.winningScoreInput.value);
+
+      if (playerNames.length < MINIMUM_PLAYERS) {
+        showMessage(elements.loadError, "Enter at least two player names before starting.");
+        return null;
+      }
+
+      if (state.deckSource.length < 2) {
+        showMessage(elements.loadError, "The deck is not ready yet. Load at least two valid cards in cards.csv before starting.");
+        return null;
+      }
+
+      hideMessage(elements.loadError);
+
+      const shuffledDeck = shuffle(state.deckSource);
+      const players = playerNames.map((name) => {
+        const colors = colorSetFromLabel(name);
+        return {
+          id: crypto.randomUUID(),
+          name,
+          score: 0,
+          initials: initialsForName(name),
+          color: colors.base,
+          colorSoft: colors.soft
+        };
+      });
+
+      const leftCard = shuffledDeck.shift() || null;
+      const rightCard = shuffledDeck.shift() || null;
+
+      return {
+        players,
+        winningScore,
+        deck: shuffledDeck,
+        leftCard,
+        rightCard,
+        roundNumber: 1,
+        winnerId: null,
+        isDeckExhausted: false
+      };
+    }
+
+    function startGame() {
+      const nextGame = buildGameState();
+      if (!nextGame) {
+        return;
+      }
+
+      state.game = nextGame;
+      renderGame();
+      elements.setupScreen.classList.add("hidden");
+      elements.gameScreen.classList.remove("hidden");
+      elements.winnerOverlay.classList.add("hidden");
+    }
+
+    function renderCard(element, card, positionLabel) {
+      if (!card) {
+        element.className = "card card-empty";
+        element.innerHTML = `
+          <div class="card-position">${positionLabel}</div>
+          <p>No card available.</p>
+        `;
+        return;
+      }
+
+      const colors = colorSetFromLabel(card.category);
+      element.className = "card";
+      element.style.background = `linear-gradient(180deg, ${colors.soft}, rgba(255,255,255,0.92))`;
+      element.style.borderColor = "rgba(30, 26, 23, 0.1)";
+      element.innerHTML = `
+        <div class="card-header">
+          <div class="card-position">${positionLabel}</div>
+          <div class="category-pill" style="color:${colors.deep};">${escapeHtml(card.category)}</div>
+        </div>
+        <div class="clue-text">${escapeHtml(card.clue)}</div>
+      `;
+    }
+
+    function renderPlayers() {
+      const game = state.game;
+      elements.playerGrid.innerHTML = "";
+
+      game.players.forEach((player) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "player-chip";
+        button.disabled = Boolean(game.winnerId) || game.isDeckExhausted;
+        button.innerHTML = `
+          <div class="player-avatar" style="background:${player.color};">${escapeHtml(player.initials)}</div>
+          <div>
+            <div class="player-name">${escapeHtml(player.name)}</div>
+            <div class="player-prompt">Tap to award the round</div>
+          </div>
+          <div class="score-badge">${player.score}</div>
+        `;
+        button.style.background = `linear-gradient(180deg, rgba(255,255,255,0.95), ${player.colorSoft})`;
+        button.addEventListener("click", () => awardPoint(player.id));
+        elements.playerGrid.appendChild(button);
+      });
+    }
+
+    function updateGameMessage() {
+      const game = state.game;
+      hideMessage(elements.gameMessage);
+
+      if (game.isDeckExhausted) {
+        showMessage(
+          elements.gameMessage,
+          "The deck ran out of cards before anyone reached the target score. Start a new game to reshuffle and play again."
+        );
+      }
+    }
+
+    function renderGame() {
+      const game = state.game;
+      if (!game) {
+        return;
+      }
+
+      elements.statusWinningScore.textContent = `${game.winningScore} point${game.winningScore === 1 ? "" : "s"} to win`;
+      elements.statusDeck.textContent = `${game.deck.length} card${game.deck.length === 1 ? "" : "s"} remaining`;
+      elements.statusRound.textContent = `Round ${game.roundNumber}`;
+
+      renderCard(elements.leftCard, game.leftCard, "Left Card");
+      renderCard(elements.rightCard, game.rightCard, "Right Card");
+      renderPlayers();
+      updateGameMessage();
+    }
+
+    function advanceCards() {
+      const game = state.game;
+      game.leftCard = game.rightCard;
+      game.rightCard = game.deck.shift() || null;
+      game.roundNumber += 1;
+
+      if (!game.leftCard || !game.rightCard) {
+        game.isDeckExhausted = true;
+      }
+    }
+
+    function awardPoint(playerId) {
+      const game = state.game;
+      if (!game || game.winnerId || game.isDeckExhausted) {
+        return;
+      }
+
+      const player = game.players.find((entry) => entry.id === playerId);
+      if (!player) {
+        return;
+      }
+
+      player.score += 1;
+
+      if (player.score >= game.winningScore) {
+        game.winnerId = player.id;
+        renderGame();
+        showWinner(player);
+        return;
+      }
+
+      advanceCards();
+      renderGame();
+    }
+
+    function showWinner(player) {
+      const colors = colorSetFromLabel(player.name);
+      elements.winnerMark.style.background = colors.base;
+      elements.winnerMark.textContent = player.initials;
+      elements.winnerTitle.textContent = `${player.name} wins!`;
+      elements.winnerBody.textContent = `${player.name} reached ${player.score} point${player.score === 1 ? "" : "s"} and takes the game.`;
+      elements.winnerOverlay.classList.remove("hidden");
+    }
+
+    function backToSetup() {
+      state.game = null;
+      elements.gameScreen.classList.add("hidden");
+      elements.setupScreen.classList.remove("hidden");
+      elements.winnerOverlay.classList.add("hidden");
+      hideMessage(elements.gameMessage);
+    }
+
+    function restartCurrentSession() {
+      elements.winnerOverlay.classList.add("hidden");
+      startGame();
+    }
+
+    function escapeHtml(value) {
+      return value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    elements.addPlayerButton.addEventListener("click", () => addPlayerRow(""));
+    elements.trimPlayersButton.addEventListener("click", trimBlankRows);
+    elements.startGameButton.addEventListener("click", startGame);
+    elements.restartButton.addEventListener("click", backToSetup);
+    elements.playAgainButton.addEventListener("click", restartCurrentSession);
+    elements.backToSetupButton.addEventListener("click", backToSetup);
+    elements.winningScoreInput.addEventListener("change", () => {
+      elements.winningScoreInput.value = clampWinningScore(elements.winningScoreInput.value);
+    });
+
+    renderPlayerDraft();
+    loadDeck();
+  </script>
+</body>
+</html>
