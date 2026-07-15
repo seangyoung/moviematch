@@ -81,7 +81,6 @@
 
     .hero,
     .setup-card,
-    .status-bar,
     .card,
     .player-chip,
     .overlay-card {
@@ -270,31 +269,8 @@
 
     .game-screen {
       display: grid;
-      grid-template-rows: auto minmax(0, 1fr) auto;
+      grid-template-rows: minmax(0, 1fr) auto;
       gap: 20px;
-    }
-
-    .status-bar {
-      padding: 18px 20px;
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
-      align-items: center;
-    }
-
-    .status-block strong {
-      display: block;
-      font-size: 0.78rem;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-bottom: 6px;
-    }
-
-    .status-block span {
-      display: block;
-      font-weight: 700;
-      font-size: clamp(1rem, 1.6vw, 1.2rem);
     }
 
     .cards-grid {
@@ -329,17 +305,8 @@
       position: relative;
       z-index: 1;
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
+      justify-content: flex-start;
       margin-bottom: 18px;
-    }
-
-    .card-position {
-      font-size: 0.82rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      opacity: 0.7;
     }
 
     .category-pill {
@@ -511,14 +478,6 @@
         min-height: calc(100vh - 28px);
       }
 
-      .status-bar {
-        grid-template-columns: 1fr;
-      }
-
-      .cards-grid {
-        grid-template-columns: 1fr;
-      }
-
       .card {
         min-height: 240px;
       }
@@ -532,9 +491,34 @@
 
       .hero,
       .setup-card,
-      .status-bar,
       .card {
         border-radius: 24px;
+      }
+
+      .cards-grid {
+        gap: 12px;
+      }
+
+      .card {
+        padding: 14px;
+        min-height: 220px;
+      }
+
+      .category-pill {
+        padding: 8px 10px;
+        font-size: 0.72rem;
+      }
+
+      .clue-text {
+        font-size: clamp(1.05rem, 4.4vw, 1.45rem);
+      }
+
+      .player-tray-header {
+        align-items: flex-start;
+      }
+
+      .player-tray-header p {
+        font-size: 0.88rem;
       }
 
       .player-grid {
@@ -590,21 +574,6 @@
       </section>
 
       <section class="game-screen hidden" id="gameScreen">
-        <section class="status-bar">
-          <div class="status-block">
-            <strong>Target</strong>
-            <span id="statusWinningScore">5 points to win</span>
-          </div>
-          <div class="status-block">
-            <strong>Deck</strong>
-            <span id="statusDeck">0 cards remaining</span>
-          </div>
-          <div class="status-block">
-            <strong>Round</strong>
-            <span id="statusRound">Round 1</span>
-          </div>
-        </section>
-
         <section class="cards-grid">
           <article class="card" id="leftCard"></article>
           <article class="card" id="rightCard"></article>
@@ -654,9 +623,6 @@
       loadMessage: document.getElementById("loadMessage"),
       loadError: document.getElementById("loadError"),
       startGameButton: document.getElementById("startGameButton"),
-      statusWinningScore: document.getElementById("statusWinningScore"),
-      statusDeck: document.getElementById("statusDeck"),
-      statusRound: document.getElementById("statusRound"),
       leftCard: document.getElementById("leftCard"),
       rightCard: document.getElementById("rightCard"),
       playerGrid: document.getElementById("playerGrid"),
@@ -961,7 +927,6 @@
         deck: shuffledDeck,
         leftCard,
         rightCard,
-        roundNumber: 1,
         winnerId: null,
         isDeckExhausted: false
       };
@@ -980,11 +945,10 @@
       elements.winnerOverlay.classList.add("hidden");
     }
 
-    function renderCard(element, card, positionLabel) {
+    function renderCard(element, card) {
       if (!card) {
         element.className = "card card-empty";
         element.innerHTML = `
-          <div class="card-position">${positionLabel}</div>
           <p>No card available.</p>
         `;
         return;
@@ -996,7 +960,6 @@
       element.style.borderColor = "rgba(30, 26, 23, 0.1)";
       element.innerHTML = `
         <div class="card-header">
-          <div class="card-position">${positionLabel}</div>
           <div class="category-pill" style="color:${colors.deep};">${escapeHtml(card.category)}</div>
         </div>
         <div class="clue-text">${escapeHtml(card.clue)}</div>
@@ -1044,12 +1007,8 @@
         return;
       }
 
-      elements.statusWinningScore.textContent = `${game.winningScore} point${game.winningScore === 1 ? "" : "s"} to win`;
-      elements.statusDeck.textContent = `${game.deck.length} card${game.deck.length === 1 ? "" : "s"} remaining`;
-      elements.statusRound.textContent = `Round ${game.roundNumber}`;
-
-      renderCard(elements.leftCard, game.leftCard, "Left Card");
-      renderCard(elements.rightCard, game.rightCard, "Right Card");
+      renderCard(elements.leftCard, game.leftCard);
+      renderCard(elements.rightCard, game.rightCard);
       renderPlayers();
       updateGameMessage();
     }
@@ -1058,7 +1017,6 @@
       const game = state.game;
       game.leftCard = game.rightCard;
       game.rightCard = game.deck.shift() || null;
-      game.roundNumber += 1;
 
       if (!game.leftCard || !game.rightCard) {
         game.isDeckExhausted = true;
